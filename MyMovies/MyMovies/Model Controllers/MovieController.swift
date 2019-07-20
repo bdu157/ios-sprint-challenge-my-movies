@@ -116,8 +116,38 @@ class MovieController {
     
     
     
-    //Delete Movie
-    
+    //Delete Movie from persistentStore
+    func deleteMovie(for movie: Movie) {
+        self.deleteTaskFromServer(for: movie)
+        let moc = CoreDataStack.shared.mainContext
+        moc.delete(movie)
+        
+        do {
+            try moc.save()
+        } catch {
+            moc.reset()
+            NSLog("Error saving managed object context:\(error)")
+        }
+    }
+    //Delete from firebase
+    func deleteTaskFromServer(for movie: Movie, completion: @escaping (Error?) -> Void = { _ in }) {
+        guard let identifier = movie.identifier?.uuidString else {
+            completion(NSError())
+            return
+        }
+        let requestURL = baseURL2.appendingPathComponent(identifier).appendingPathExtension("json")
+        var request = URLRequest(url: requestURL)
+        request.httpMethod = "DELETE"
+        
+        URLSession.shared.dataTask(with: request) { (_, _, error) in
+            if let error = error {
+                NSLog("Error in deleting movie:\(error)")
+                completion(error)
+                return
+            }
+            completion(nil)
+        }.resume()
+    }
     
     
     //toggleButton
