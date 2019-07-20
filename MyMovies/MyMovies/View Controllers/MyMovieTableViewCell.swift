@@ -17,6 +17,8 @@ class MyMovieTableViewCell: UITableViewCell {
     @IBOutlet weak var myMovieTitleLabel: UILabel!
     @IBOutlet weak var updateButton: UIButton!
     
+    var movieController: MovieController?
+    
     var addedMovie: Movie? {
         didSet {
             updateView()
@@ -27,6 +29,7 @@ class MyMovieTableViewCell: UITableViewCell {
     
     @IBAction func updateButtonTapped(_ sender: Any) {
         self.delegate?.seenButtonAction(for: self)
+        movieController!.saveToPersistentStore()
     }
     
     func updateView() {

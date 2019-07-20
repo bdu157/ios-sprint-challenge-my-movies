@@ -44,6 +44,7 @@ class MovieSearchTableViewController: UITableViewController, UISearchBarDelegate
         let movie = self.movieController.searchedMovies[indexPath.row]
         customCell.movieRepresentation = movie
         customCell.titleLabel?.text = movie.title
+        customCell.movieController = self.movieController
         //cell.textLabel?.text = movieController.searchedMovies[indexPath.row].title
         
         return cell

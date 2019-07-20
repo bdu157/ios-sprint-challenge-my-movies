@@ -112,7 +112,11 @@ class MovieController {
     }
     
     //Update Movie
-    
+    func update(for movie: Movie, with movieRepresentation: MovieRepresentation) {
+        movie.title = movieRepresentation.title
+        movie.identifier = movieRepresentation.identifier
+        movie.hasWatched = movieRepresentation.hasWatched!
+    }
     
     
     

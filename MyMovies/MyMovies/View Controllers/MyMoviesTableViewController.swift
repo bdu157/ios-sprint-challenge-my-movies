@@ -68,6 +68,7 @@ class MyMoviesTableViewController: UITableViewController, NSFetchedResultsContro
         guard let customCell = cell as? MyMovieTableViewCell else {return UITableViewCell()}
             let addedMovie = self.fetchedResultsController.object(at: indexPath)
             customCell.addedMovie = addedMovie
+            customCell.movieController = self.movieController
             customCell.delegate = self
         return cell
     }
@@ -148,7 +149,6 @@ class MyMoviesTableViewController: UITableViewController, NSFetchedResultsContro
         let movie = self.fetchedResultsController.object(at: index)
         movieController.toggleSeen(for: movie)
         movieController.put(movie: movie)
-        tableView.reloadRows(at: [index], with: .none
-        )
+        tableView.reloadRows(at: [index], with: .none)
     }
 }
