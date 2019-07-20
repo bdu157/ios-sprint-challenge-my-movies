@@ -120,4 +120,8 @@ class MovieController {
     
     
     
+    //toggleButton
+    func toggleSeen(for movie: Movie) {
+        movie.hasWatched = !movie.hasWatched
+    }
 }
