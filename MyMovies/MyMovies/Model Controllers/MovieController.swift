@@ -55,4 +55,69 @@ class MovieController {
     // MARK: - Properties
     
     var searchedMovies: [MovieRepresentation] = []
+    
+    
+    // MARK: - Adding, updating, and deleting movies to/from CoreData and Firebase
+    
+    let baseURL2 = URL(string: "https://task-coredata.firebaseio.com/")!
+    
+    //Add Movie
+    func addMoive(for selectedMovie: MovieRepresentation) {
+        let movie = Movie(title: selectedMovie.title)
+        self.put(movie: movie)
+        
+        self.saveToPersistentStore()
+    }
+    
+    
+        // PUT
+    func put(movie: Movie, completion: @escaping (Error?) -> Void = {_ in}) {
+        let identifier = movie.identifier?.uuidString
+        
+        let requestURL = baseURL2.appendingPathComponent(identifier!).appendingPathExtension("json")
+        
+        var request = URLRequest(url: requestURL)
+        request.httpMethod = "PUT"
+        
+        do {
+            guard let representation = movie.movieRepresentation else {
+                completion(NSError())
+                return
+            }
+            request.httpBody = try JSONEncoder().encode(representation)
+        } catch {
+            NSLog("Error encoding task \(movie): \(error)")
+            completion(error)
+            return
+        }
+        URLSession.shared.dataTask(with: request) { (_, _, error) in
+            if let error = error {
+                NSLog("Error PUTing task to server: \(error)")
+                completion(error)
+                return
+            }
+            completion(nil)
+        }.resume()
+    }
+    
+    
+        // savetopersistentstore
+    func saveToPersistentStore() {
+        do {
+            let moc = CoreDataStack.shared.mainContext
+            try moc.save()
+        } catch {
+            NSLog("Error saving managed object context:\(error)")
+        }
+    }
+    
+    //Update Movie
+    
+    
+    
+    
+    //Delete Movie
+    
+    
+    
 }
