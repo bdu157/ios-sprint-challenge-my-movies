@@ -118,7 +118,7 @@ class MovieController {
     
     
     
-    
+    //(?) on Tasks, delete on tableview crashed without using performAndWait but mine is not crashing why?
     //Delete Movie from persistentStore
     func deleteMovie(for movie: Movie) {
         self.deleteTaskFromServer(for: movie)
@@ -184,14 +184,15 @@ class MovieController {
                 var error: Error? = nil
                 backgroundContext.performAndWait {
                     for movieRep in movieRepresentation {
-                        let movie = self.fetchSingleMovieFromPersistentStore(forIdentifier:movieRep.identifier?.uuidString ?? "", backgroundContext: backgroundContext)
+                        let movie = self.fetchSingleMovieFromPersistentStore(forIdentifier: movieRep.identifier?.uuidString ?? "", backgroundContext: backgroundContext)
                         if let movie = movie {
                             if movie.title != movieRep.title || movie.identifier != movieRep.identifier || movie.hasWatched != movieRep.hasWatched {
                                 self.update(for: movie, with: movieRep)
                             }
                         } else {
-                            //use failable initializer to create new movies
+                            //use failable initializer to create new movies  (?) should this be assigned to addMovie so it can be created and saved??
                             let _ = Movie(movieRepresentation: movieRep, backgroundContext: backgroundContext)
+                            //self.addMoive(for: movie!.movieRepresentation!)
                         }
                     }
                     
@@ -218,11 +219,11 @@ class MovieController {
         movie.hasWatched = movieRepresentation.hasWatched!
     }
     
-    //fetch from persistentstore
+    //fetch from persistentstore that has same identifier as idenfitiers from fetched data from firebase
     func fetchSingleMovieFromPersistentStore(forIdentifier identifier: String, backgroundContext: NSManagedObjectContext) -> Movie? {
         let fetchRequest: NSFetchRequest<Movie> = Movie.fetchRequest()
         
-        fetchRequest.predicate = NSPredicate(format: "identifier == %@", identifier)
+        fetchRequest.predicate = NSPredicate(format: "identifier == %@", identifier) //based on identifier for fetchedData from firebase, "sort/filter" a movie that has same identiifer as one from firebase
         
         var result: Movie? = nil
         backgroundContext.performAndWait {

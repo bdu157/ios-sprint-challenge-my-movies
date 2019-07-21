@@ -15,7 +15,7 @@ class MyMoviesTableViewController: UITableViewController, NSFetchedResultsContro
 
     lazy var fetchedResultsController: NSFetchedResultsController<Movie> = {
         let fetchRequest: NSFetchRequest<Movie> = Movie.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)] //order matters
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "hasWatched", ascending: true), NSSortDescriptor(key: "title", ascending: true)] //order matters
         let moc = CoreDataStack.shared.mainContext
         
         
@@ -60,7 +60,13 @@ class MyMoviesTableViewController: UITableViewController, NSFetchedResultsContro
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         guard let sectionInfo = self.fetchedResultsController.sections?[section] else {return nil}
-        return sectionInfo.name
+        var sectionTitle: String = sectionInfo.name
+        if sectionTitle == "0" {
+            sectionTitle = "Not Watched"
+        } else {
+            sectionTitle = "Watched"
+        }
+        return sectionTitle
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

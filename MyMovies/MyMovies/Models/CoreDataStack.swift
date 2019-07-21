@@ -21,7 +21,7 @@ class CoreDataStack {
             }
         })
         //add merging from Parent context
-        
+        container.viewContext.automaticallyMergesChangesFromParent = true   //(?) the app worked fine without this why?
         return container
     }()
     
