@@ -7,8 +7,13 @@
 //
 
 import Foundation
+import CoreData
 
 class MovieController {
+    
+    init() {
+        fetchMoviesFromServer()
+    }
     
     private let apiKey = "4cc920dab8b729a619647ccc4d191d5e"
     private let baseURL = URL(string: "https://api.themoviedb.org/3/search/movie")!
@@ -111,12 +116,6 @@ class MovieController {
         }
     }
     
-    //Update Movie
-    func update(for movie: Movie, with movieRepresentation: MovieRepresentation) {
-        movie.title = movieRepresentation.title
-        movie.identifier = movieRepresentation.identifier
-        movie.hasWatched = movieRepresentation.hasWatched!
-    }
     
     
     
@@ -133,7 +132,7 @@ class MovieController {
             NSLog("Error saving managed object context:\(error)")
         }
     }
-    //Delete from firebase
+       //Delete from firebase
     func deleteTaskFromServer(for movie: Movie, completion: @escaping (Error?) -> Void = { _ in }) {
         guard let identifier = movie.identifier?.uuidString else {
             completion(NSError())
@@ -157,5 +156,82 @@ class MovieController {
     //toggleButton
     func toggleSeen(for movie: Movie) {
         movie.hasWatched = !movie.hasWatched
+    }
+    
+    //fetchMovieFromServer(firebase)
+    func fetchMoviesFromServer(completion: @escaping (Error?) -> Void = { _ in}) {
+        let requestURL = baseURL2.appendingPathExtension("json")
+        
+        URLSession.shared.dataTask(with: requestURL) { (data, _, error) in
+            if let error = error {
+                NSLog("Error fetching movie: \(error)")
+                completion(error)
+                return
+            }
+            
+            guard let data = data else {
+                NSLog("Error getting data")
+                completion(error)
+                return
+            }
+            
+            var movieRepresentation: [MovieRepresentation] = []
+            
+            do {
+                movieRepresentation = Array(try JSONDecoder().decode([String: MovieRepresentation].self, from: data).values)
+                let backgroundContext = CoreDataStack.shared.container.newBackgroundContext()
+                //for loop to check each one of movie to see if it already exsits in coreData. if it does then update if not create a new one
+                var error: Error? = nil
+                backgroundContext.performAndWait {
+                    for movieRep in movieRepresentation {
+                        let movie = self.fetchSingleMovieFromPersistentStore(forIdentifier:movieRep.identifier?.uuidString ?? "", backgroundContext: backgroundContext)
+                        if let movie = movie {
+                            if movie.title != movieRep.title || movie.identifier != movieRep.identifier || movie.hasWatched != movieRep.hasWatched {
+                                self.update(for: movie, with: movieRep)
+                            }
+                        } else {
+                            //use failable initializer to create new movies
+                            let _ = Movie(movieRepresentation: movieRep, backgroundContext: backgroundContext)
+                        }
+                    }
+                    
+                    do {
+                        try backgroundContext.save()
+                    } catch let saveError {
+                        error = saveError
+                    }
+                }
+                if let error = error { throw error}
+                completion(nil)
+            } catch {
+                NSLog("Error decoding entry representations: \(error)")
+                completion(error)
+                return
+            }
+        }.resume()
+    }
+    
+    //Update Movie
+    func update(for movie: Movie, with movieRepresentation: MovieRepresentation) {
+        movie.title = movieRepresentation.title
+        movie.identifier = movieRepresentation.identifier
+        movie.hasWatched = movieRepresentation.hasWatched!
+    }
+    
+    //fetch from persistentstore
+    func fetchSingleMovieFromPersistentStore(forIdentifier identifier: String, backgroundContext: NSManagedObjectContext) -> Movie? {
+        let fetchRequest: NSFetchRequest<Movie> = Movie.fetchRequest()
+        
+        fetchRequest.predicate = NSPredicate(format: "identifier == %@", identifier)
+        
+        var result: Movie? = nil
+        backgroundContext.performAndWait {
+            do {
+                result = try backgroundContext.fetch(fetchRequest).first
+            } catch {
+                NSLog("Error fetching task with uuid \(identifier): \(error)")
+            }
+        }
+        return result
     }
 }

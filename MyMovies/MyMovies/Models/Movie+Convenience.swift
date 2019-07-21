@@ -33,4 +33,14 @@ extension Movie {
         self.identifier = identifier
         self.hasWatched = hasWatched
     }
+    
+    convenience init?(movieRepresentation: MovieRepresentation, backgroundContext: NSManagedObjectContext) {
+        guard let identifier = movieRepresentation.identifier,
+            let hasWatched = movieRepresentation.hasWatched else {return nil}
+        
+            self.init(title: movieRepresentation.title,
+                  identifier: identifier,
+                  hasWatched: hasWatched,
+                  context: backgroundContext)
+    }
 }
