@@ -192,7 +192,7 @@ class MovieController {
                         } else {
                             //use failable initializer to create new movies  (?) should this be assigned to addMovie so it can be created and saved??
                             let _ = Movie(movieRepresentation: movieRep, backgroundContext: backgroundContext)
-                            //self.addMoive(for: movie!.movieRepresentation!)
+                            //self.addMoive(for: movie!.movieRepresentation!)  - this actually creates itself
                         }
                     }
                     

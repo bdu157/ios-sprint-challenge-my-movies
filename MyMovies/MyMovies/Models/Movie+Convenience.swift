@@ -12,13 +12,13 @@ import CoreData
 extension Movie {
     
     //computed property for sectionTitle
-    var sectionMovie: String {
-        if hasWatched == true {
-            return "Watched"
-        } else {
-            return "Unwatched"
-        }
-    }
+//    var sectionMovie: String {
+//        if hasWatched == true {
+//            return "Watched"
+//        } else {
+//            return "Unwatched"
+//        }
+//    }
     
     var movieRepresentation: MovieRepresentation? {
         guard let title = title else {return nil}
